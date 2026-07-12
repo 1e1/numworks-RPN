@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run host engine tests
+        run: make test
+
+      - name: Build device app (.nwa)
+        run: make
+
+      - name: Stage release asset
+        run: cp output/rpn.nwa rpn-${{ github.ref_name }}.nwa
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            "rpn-${{ github.ref_name }}.nwa#RPN app (${{ github.ref_name }}) — install via my.numworks.com/apps" \
+            --title "RPN ${{ github.ref_name }}" \
+            --notes "RPN calculator for NumWorks.
+
+          **Install:** download \`rpn-${{ github.ref_name }}.nwa\` below, then open <https://my.numworks.com/apps>, plug in your calculator and upload the file.
+
+          See the [project page](https://1e1.github.io/numworks-RPN/) for the full key map."

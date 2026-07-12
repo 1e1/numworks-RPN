@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPN — Plan de touches NumWorks N0120</title>
+<meta name="description" content="Maquette interactive du clavier NumWorks N0120 illustrant le plan de touches de l'app RPN : touches inutilisées mises en évidence, vue touche / vue commande.">
+</head>
+<body>
+<style>
+  :root {
+    --paper: #f7f6f3;
+    --surface: #ffffff;
+    --ink: #1b1d22;
+    --muted: #6c6f78;
+    --faint: #9a9ca4;
+    --line: #e4e2dc;
+    --amber: #f2a516;
+    --shadow: 0 1px 2px rgba(20,20,20,.06), 0 10px 30px rgba(20,20,20,.08);
+    --c-input: #2f6df0;
+    --c-fn: #0e9c8b;
+    --c-stack: #e8940c;
+    --c-system: #8a8d96;
+    --c-unused: #e0483d;
+    /* Physical-device palette — stays "white plastic" in both themes */
+    --dev-shell: #fcfcfc;
+    --dev-shell2: #f0f0f2;
+    --dev-edge: #e6e6e8;
+    --key-face: #ffffff;
+    --key-face2: #f2f2f4;
+    --key-edge: #dcdcde;
+    --key-ink: #2a2b2e;
+    --key-gray: #b6b7bb;
+    --key-orange: #ef8b1f;
+    --lcd-bar: #f5a623;
+    --lcd-face: #ffffff;
+    --lcd-ink: #2a2b2e;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121319; --surface: #1a1c22; --ink: #edeef1;
+      --muted: #a2a5ae; --faint: #71747d; --line: #2c2f38; --amber: #f7b336;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 34px rgba(0,0,0,.4);
+      --c-input: #6ea0ff; --c-fn: #38c7b4; --c-stack: #f7b336; --c-system: #9aa0ab; --c-unused: #ff6a5e;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f7f6f3; --surface: #ffffff; --ink: #1b1d22; --muted: #6c6f78;
+    --faint: #9a9ca4; --line: #e4e2dc; --amber: #f2a516; --shadow: 0 1px 2px rgba(20,20,20,.06), 0 10px 30px rgba(20,20,20,.08);
+    --c-input: #2f6df0; --c-fn: #0e9c8b; --c-stack: #e8940c; --c-system: #8a8d96; --c-unused: #e0483d;
+  }
+  :root[data-theme="dark"] {
+    --paper: #121319; --surface: #1a1c22; --ink: #edeef1; --muted: #a2a5ae;
+    --faint: #71747d; --line: #2c2f38; --amber: #f7b336; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 34px rgba(0,0,0,.4);
+    --c-input: #6ea0ff; --c-fn: #38c7b4; --c-stack: #f7b336; --c-system: #9aa0ab; --c-unused: #ff6a5e;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding: 26px 22px 60px; }
+
+  header.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+  .brand { display: flex; gap: 13px; align-items: center; }
+  .mark {
+    width: 44px; height: 44px; border-radius: 12px; flex: none;
+    background: linear-gradient(150deg, var(--amber), #e07d0a);
+    display: grid; place-items: center; color: #1b1d22; font-weight: 800; font-size: 19px;
+    box-shadow: var(--shadow);
+  }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -.2px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .theme-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-weight: 600;
+  }
+  .theme-btn:hover { color: var(--ink); }
+
+  .layout { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 30px; align-items: start; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ---------------- Physical calculator ---------------- */
+  .device {
+    background: linear-gradient(180deg, var(--dev-shell), var(--dev-shell2));
+    border: 1px solid var(--dev-edge); border-radius: 34px;
+    padding: 20px 18px 26px;
+    box-shadow: 0 2px 3px rgba(0,0,0,.05), 0 26px 60px rgba(0,0,0,.16);
+  }
+  .brandmark { text-align: center; letter-spacing: 4px; font-size: 11px; color: #bcbcbe; font-weight: 700; margin: 2px 0 14px; }
+
+  .screen {
+    border-radius: 9px; overflow: hidden; margin-bottom: 20px;
+    border: 1px solid #d6d6d8; box-shadow: inset 0 1px 3px rgba(0,0,0,.14);
+    background: var(--lcd-face);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .screen .bar {
+    background: var(--lcd-bar); color: #fff; font-size: 11px; font-weight: 700;
+    padding: 4px 9px; display: flex; justify-content: space-between; align-items: center; letter-spacing: .3px;
+  }
+  .screen .body { padding: 11px 13px; min-height: 72px; color: var(--lcd-ink); font-size: 12.5px; line-height: 1.45; }
+  .screen .s-title { font-weight: 700; font-size: 13.5px; }
+  .screen .s-trig { margin-top: 3px; }
+  .screen .s-trig b { color: #b06d05; }
+  .screen .s-desc { margin-top: 6px; opacity: .68; font-size: 12px; }
+
+  /* top cluster: d-pad + home/power + ok/back */
+  .topcluster { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 18px; padding: 0 2px; }
+  .dpad { position: relative; display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 34px); gap: 3px;
+    grid-template-areas: ". up ." "left hub right" ". down ."; }
+  .dpad .hub { grid-area: hub; border-radius: 50%; background: var(--key-face2); border: 1px solid var(--key-edge); }
+  .dpad .k[data-id="up"]{grid-area:up} .dpad .k[data-id="down"]{grid-area:down}
+  .dpad .k[data-id="left"]{grid-area:left} .dpad .k[data-id="right"]{grid-area:right}
+  .sys-mid { display: flex; flex-direction: column; gap: 9px; align-items: center; }
+  .sys-right { display: flex; gap: 12px; align-items: center; }
+
+  .grid6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin-top: 9px; }
+  .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 9px; }
+
+  /* base keycap */
+  .k {
+    position: relative; cursor: pointer; border: 1px solid var(--key-edge);
+    background: linear-gradient(180deg, var(--key-face), var(--key-face2));
+    color: var(--key-ink); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0; text-align: center; padding: 5px 4px;
+    box-shadow: 0 1px 1.5px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.7);
+    transition: transform .07s ease, box-shadow .12s ease, filter .12s ease;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  .k:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.7); }
+  .k:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .k .cap { font: 700 15px/1 ui-monospace, Menlo, monospace; }
+  .k .cap small { font-size: 9px; font-weight: 600; }
+  .k .rpnlabel { font: 800 8px/1 ui-sans-serif, system-ui, sans-serif; color: var(--c-stack); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; }
+  .k .alpha { position: absolute; top: 3px; right: 5px; font: 600 8px ui-sans-serif, sans-serif; color: var(--key-gray); }
+  .k .tag {
+    position: absolute; top: 2px; right: 2px; font: 800 7.5px/1 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .2px; padding: 2px 3px; border-radius: 3px; text-transform: uppercase;
+    color: var(--role-ink); background: var(--role-bg);
+  }
+
+  /* shapes per block */
+  .grid6 .k { min-height: 44px; border-radius: 15px; }
+  .grid5 .k { min-height: 50px; border-radius: 26px / 34px; }
+
+  /* category rail under the glyph */
+  .keypad .k::after {
+    content: ""; position: absolute; left: 26%; right: 26%; bottom: 5px; height: 2.5px;
+    border-radius: 2px; background: var(--rail, transparent);
+  }
+  .k.cat-input  { --rail: var(--c-input); }
+  .k.cat-fn     { --rail: var(--c-fn); }
+  .k.cat-stack  { --rail: var(--c-stack); background: linear-gradient(180deg, #fff7ea, #fdeecf); }
+  .k.cat-system { --rail: transparent; }
+  .k.cat-unused {
+    --rail: transparent;
+    background:
+      repeating-linear-gradient(-45deg, transparent, transparent 5px, color-mix(in srgb, var(--c-unused) 18%, transparent) 5px, color-mix(in srgb, var(--c-unused) 18%, transparent) 10px),
+      linear-gradient(180deg, var(--key-face), var(--key-face2));
+    border: 1.5px dashed var(--c-unused); color: color-mix(in srgb, var(--c-unused) 60%, var(--key-ink));
+  }
+  .k.cat-unused .cap { color: color-mix(in srgb, var(--c-unused) 62%, var(--key-ink)); }
+
+  /* nav / special variants */
+  .k.arrow { min-height: 34px; border-radius: 9px; padding: 0; }
+  .k.arrow .cap { font-size: 13px; }
+  .k.arrow.cat-unused { color: var(--c-unused); }
+  .k.home { width: 54px; height: 44px; border-radius: 13px; background: linear-gradient(180deg, #f9b23e, var(--amber)); border-color: #e0900f; color: #fff; }
+  .k.home .cap { color: #fff; font-size: 17px; }
+  .k.power { width: 54px; height: 32px; border-radius: 11px; background: linear-gradient(180deg, #3a3a3c, #262628); border-color: #1c1c1e; color: #eaeaea; }
+  .k.power .cap { color: #eaeaea; font-size: 14px; }
+  .k.round { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(180deg, var(--key-face), var(--key-face2)); }
+  .k.round .cap { font-size: 15px; }
+  .k.home::after, .k.power::after, .k.round::after, .k.arrow::after { display: none; }
+
+  .k.selected { outline: 3px solid var(--amber); outline-offset: 1px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber) 32%, transparent); z-index: 2; }
+  .k.dim { opacity: .34; filter: saturate(.45); }
+
+  /* ---------------- Right pane ---------------- */
+  .controls { display: flex; flex-direction: column; gap: 16px; }
+  .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; align-self: flex-start; }
+  .seg button {
+    border: 0; background: transparent; color: var(--muted); font: 600 13px ui-sans-serif, system-ui, sans-serif;
+    padding: 7px 15px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button[aria-selected="true"] { background: var(--amber); color: #1b1d22; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+    padding: 6px 12px 6px 9px; font-size: 12.5px; color: var(--muted); font-weight: 600;
+  }
+  .chip .dot { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .chip[aria-pressed="true"] { color: var(--ink); border-color: currentColor; }
+  .chip.unused .dot { background: repeating-linear-gradient(-45deg, var(--c-unused), var(--c-unused) 2px, transparent 2px, transparent 4px); border: 1px solid var(--c-unused); }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+  .phead { padding: 11px 15px; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--faint); font-weight: 700; border-bottom: 1px solid var(--line); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; }
+  .col { min-width: 0; }
+  .col + .col { border-left: 1px solid var(--line); }
+  .colhead { padding: 10px 14px 8px; font: 700 11.5px ui-sans-serif, system-ui, sans-serif; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .colhead.fn { color: var(--c-fn); box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c-fn) 45%, transparent); }
+  .colhead.stack { color: var(--c-stack); box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c-stack) 45%, transparent); }
+  .rows { max-height: 600px; overflow-y: auto; }
+  .row {
+    display: grid; grid-template-columns: 40px 1fr; gap: 9px; align-items: start;
+    padding: 9px 13px; border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row:hover { background: color-mix(in srgb, var(--amber) 8%, transparent); }
+  .row.active { background: color-mix(in srgb, var(--amber) 16%, transparent); box-shadow: inset 3px 0 0 var(--amber); }
+  .row .glyph { font: 700 13px ui-monospace, Menlo, monospace; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 3px; }
+  .row .content { min-width: 0; }
+  .row .line { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .row .nm { font-weight: 650; font-size: 13px; }
+  .row .trig { font: 600 10.5px ui-monospace, Menlo, monospace; color: var(--muted); white-space: nowrap; }
+  .row .d { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+  @media (max-width: 520px) { .cols { grid-template-columns: 1fr; } .col + .col { border-left: 0; border-top: 1px solid var(--line); } }
+
+  .note { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+  .note b { color: var(--ink); }
+  footer { margin-top: 30px; color: var(--faint); font-size: 12px; text-align: center; }
+  footer a { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">R↵</div>
+      <div>
+        <h1>Plan de touches RPN — NumWorks N0120</h1>
+        <div class="sub">Cliquez une touche, une ligne du tableau ou une catégorie. Les touches <b>inutilisées</b> sont hachurées en corail.</div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button">Thème auto</button>
+  </header>
+
+  <div class="layout">
+    <!-- Physical calculator mockup -->
+    <section class="device" aria-label="Clavier NumWorks N0120">
+      <div class="brandmark">NUMWORKS</div>
+      <div class="screen">
+        <div class="bar"><span>rpn</span><span id="barRight">N0120</span></div>
+        <div class="body" id="screenBody"></div>
+      </div>
+      <div class="topcluster">
+        <div class="dpad" id="dpad"><span class="hub"></span></div>
+        <div class="sys-mid" id="sysMid"></div>
+        <div class="sys-right" id="sysRight"></div>
+      </div>
+      <div class="grid6 keypad" id="fnpad"></div>
+      <div class="grid5 keypad" id="numpad"></div>
+    </section>
+
+    <!-- Controls + mapping -->
+    <section class="controls">
+      <div class="seg" role="tablist" aria-label="Vue">
+        <button role="tab" id="tab-key" aria-selected="true">Vue touche</button>
+        <button role="tab" id="tab-cmd" aria-selected="false">Vue commande RPN</button>
+      </div>
+
+      <div class="legend" id="legend"></div>
+
+      <div class="panel">
+        <div class="phead"><span id="panelTitle">Par touche</span></div>
+        <div class="cols">
+          <div class="col">
+            <div class="colhead fn">Opérateur / fonction</div>
+            <div class="rows" id="rowsFn"></div>
+          </div>
+          <div class="col">
+            <div class="colhead stack">Pile</div>
+            <div class="rows" id="rowsStack"></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="note"><b>Lecture.</b> Les opérateurs (<span style="color:var(--c-fn)">vert</span>) gardent leur symbole imprimé mais s'appliquent à la pile. Les touches sans rôle en RPN (parenthèses, espace, Ans…) sont recyclées en <span style="color:var(--c-stack)">manipulations de pile</span> (ambre). Les <span style="color:var(--c-unused)">touches inutilisées</span> — x,n,t, var, i, virgule, ◄ ►  — n'ont aucun rôle&nbsp;: elles restent disponibles.</p>
+    </section>
+  </div>
+
+  <footer>
+    <a href="https://github.com/1e1/numworks-RPN">github.com/1e1/numworks-RPN</a> · RPN v1.0.0 · Non affilié à NumWorks
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var CAT = {
+    input:  { label: "Saisie",               color: "var(--c-input)" },
+    fn:     { label: "Opérateur / fonction",  color: "var(--c-fn)" },
+    stack:  { label: "Pile (RPN)",            color: "var(--c-stack)" },
+    system: { label: "Système",               color: "var(--c-system)" },
+    unused: { label: "Inutilisée",            color: "var(--c-unused)" }
+  };
+
+  // key: id, cap, sub(small), alpha(faint letter), cat, variant, roles[]
+  var KEYS = [
+    // d-pad + system
+    { id:"up",    cap:"▲", cat:"stack",  variant:"arrow", roles:[{cmd:"ROLL ↑", trigger:"shift + ▲", cat:"stack", desc:"Rotation de la pile vers le haut"}] },
+    { id:"down",  cap:"▼", cat:"stack",  variant:"arrow", roles:[{cmd:"ROLL ↓", trigger:"shift + ▼", cat:"stack", desc:"Rotation de la pile vers le bas"}] },
+    { id:"left",  cap:"◄", cat:"unused", variant:"arrow", roles:[] },
+    { id:"right", cap:"►", cat:"unused", variant:"arrow", roles:[] },
+    { id:"home",  cap:"⌂", cat:"system", variant:"home",  roles:[] },
+    { id:"power", cap:"⏻", cat:"system", variant:"power", roles:[] },
+    { id:"ok",    cap:"OK", cat:"stack", variant:"round", roles:[{cmd:"ENTER / DUP", trigger:"OK", cat:"stack", desc:"Empile la saisie, ou duplique le niveau 1"}] },
+    { id:"back",  cap:"↰", cat:"system", variant:"round", roles:[] },
+
+    // function block (6 cols)
+    { id:"shift", cap:"shift", cat:"system", roles:[] },
+    { id:"alpha", cap:"alpha", cat:"system", roles:[] },
+    { id:"xnt",   cap:"x,n,t", cat:"unused", roles:[] },
+    { id:"var",   cap:"var", cat:"unused", roles:[] },
+    { id:"toolbox", cap:"▤", sub:"toolbox", cat:"stack", roles:[{cmd:"Menu", trigger:"toolbox", cat:"stack", desc:"Menu pile : ROT, PICK, DUP, →Dec, angle RAD/DEG…"}] },
+    { id:"backspace", cap:"⌫", cat:"stack", roles:[
+        {cmd:"DROP", trigger:"⌫", cat:"stack", desc:"Efface un caractère, ou retire le niveau 1"},
+        {cmd:"CLEAR", trigger:"shift + ⌫", cat:"stack", desc:"Vide toute la pile"} ] },
+
+    { id:"exp", cap:"eˣ", cat:"fn", alpha:"A", roles:[{cmd:"exp", trigger:"eˣ", cat:"fn", desc:"Exponentielle"}] },
+    { id:"ln",  cap:"ln", cat:"fn", alpha:"B", roles:[{cmd:"ln", trigger:"ln", cat:"fn", desc:"Logarithme népérien"}] },
+    { id:"log", cap:"log", cat:"fn", alpha:"C", roles:[{cmd:"log₁₀", trigger:"log", cat:"fn", desc:"Logarithme décimal"}] },
+    { id:"imag", cap:"i", cat:"unused", alpha:"D", roles:[] },
+    { id:"comma", cap:",", cat:"unused", alpha:"E", roles:[] },
+    { id:"power", cap:"xʸ", cat:"fn", alpha:"F", roles:[{cmd:"Puissance", trigger:"^", cat:"fn", desc:"niveau2 ^ niveau1"}] },
+
+    { id:"sin", cap:"sin", cat:"fn", alpha:"G", roles:[
+        {cmd:"sin", trigger:"sin", cat:"fn", desc:"Sinus (selon le mode angle)"},
+        {cmd:"arcsin", trigger:"shift + sin", cat:"fn", desc:"Arc sinus"} ] },
+    { id:"cos", cap:"cos", cat:"fn", alpha:"H", roles:[
+        {cmd:"cos", trigger:"cos", cat:"fn", desc:"Cosinus"},
+        {cmd:"arccos", trigger:"shift + cos", cat:"fn", desc:"Arc cosinus"} ] },
+    { id:"tan", cap:"tan", cat:"fn", alpha:"I", roles:[
+        {cmd:"tan", trigger:"tan", cat:"fn", desc:"Tangente"},
+        {cmd:"arctan", trigger:"shift + tan", cat:"fn", desc:"Arc tangente"} ] },
+    { id:"pi", cap:"π", cat:"fn", alpha:"J", roles:[{cmd:"π", trigger:"π", cat:"fn", desc:"Empile la constante π"}] },
+    { id:"sqrt", cap:"√", cat:"fn", alpha:"K", roles:[{cmd:"√", trigger:"√", cat:"fn", desc:"Racine carrée (exacte si carré parfait)"}] },
+    { id:"square", cap:"x²", cat:"fn", alpha:"L", roles:[{cmd:"Carré", trigger:"x²", cat:"fn", desc:"x²"}] },
+
+    // number block (5 cols)
+    { id:"n7", cap:"7", cat:"input", alpha:"M", roles:[{cmd:"Chiffre 7", trigger:"7", cat:"input", desc:"Saisie"}] },
+    { id:"n8", cap:"8", cat:"input", alpha:"N", roles:[{cmd:"Chiffre 8", trigger:"8", cat:"input", desc:"Saisie"}] },
+    { id:"n9", cap:"9", cat:"input", alpha:"O", roles:[{cmd:"Chiffre 9", trigger:"9", cat:"input", desc:"Saisie"}] },
+    { id:"lparen", cap:"(", cat:"stack", alpha:"P", roles:[{cmd:"SWAP", trigger:"(", cat:"stack", desc:"Échange les niveaux 1 et 2"}] },
+    { id:"rparen", cap:")", cat:"stack", alpha:"Q", roles:[{cmd:"OVER", trigger:")", cat:"stack", desc:"Copie le niveau 2 au sommet"}] },
+
+    { id:"n4", cap:"4", cat:"input", alpha:"R", roles:[{cmd:"Chiffre 4", trigger:"4", cat:"input", desc:"Saisie"}] },
+    { id:"n5", cap:"5", cat:"input", alpha:"S", roles:[{cmd:"Chiffre 5", trigger:"5", cat:"input", desc:"Saisie"}] },
+    { id:"n6", cap:"6", cat:"input", alpha:"T", roles:[{cmd:"Chiffre 6", trigger:"6", cat:"input", desc:"Saisie"}] },
+    { id:"mult", cap:"×", cat:"fn", alpha:"U", roles:[{cmd:"Multiplier", trigger:"×", cat:"fn", desc:"niveau2 × niveau1"}] },
+    { id:"div", cap:"÷", cat:"fn", alpha:"V", roles:[
+        {cmd:"Diviser", trigger:"÷", cat:"fn", desc:"niveau2 ÷ niveau1 (fraction exacte)"},
+        {cmd:"INV", trigger:"shift + ÷", cat:"stack", desc:"Inverse (1/x) du niveau 1"} ] },
+
+    { id:"n1", cap:"1", cat:"input", alpha:"W", roles:[{cmd:"Chiffre 1", trigger:"1", cat:"input", desc:"Saisie"}] },
+    { id:"n2", cap:"2", cat:"input", alpha:"X", roles:[{cmd:"Chiffre 2", trigger:"2", cat:"input", desc:"Saisie"}] },
+    { id:"n3", cap:"3", cat:"input", alpha:"Y", roles:[{cmd:"Chiffre 3", trigger:"3", cat:"input", desc:"Saisie"}] },
+    { id:"plus", cap:"+", cat:"fn", alpha:"Z", roles:[{cmd:"Additionner", trigger:"+", cat:"fn", desc:"niveau2 + niveau1 (fraction exacte)"}] },
+    { id:"minus", cap:"−", cat:"fn", roles:[
+        {cmd:"Soustraire", trigger:"−", cat:"fn", desc:"niveau2 − niveau1"},
+        {cmd:"NEG", trigger:"shift + −", cat:"stack", desc:"Change le signe (±)"} ] },
+
+    { id:"n0", cap:"0", cat:"input", alpha:"?", roles:[{cmd:"Chiffre 0", trigger:"0", cat:"input", desc:"Saisie"}] },
+    { id:"dot", cap:".", cat:"input", roles:[
+        {cmd:"Point décimal", trigger:".", cat:"input", desc:"Saisie"},
+        {cmd:"n!", trigger:"alpha + .", cat:"fn", desc:"Factorielle (exacte jusqu'à 20)"} ] },
+    { id:"ee", cap:"×10ˣ", cat:"fn", roles:[{cmd:"Exposant", trigger:"×10ˣ", cat:"fn", desc:"Notation scientifique (×10ⁿ)"}] },
+    { id:"ans", cap:"Ans", cat:"stack", roles:[{cmd:"→Dec", trigger:"Ans", cat:"stack", desc:"Approximation décimale du niveau 1"}] },
+    { id:"exe", cap:"EXE", cat:"stack", roles:[{cmd:"ENTER", trigger:"EXE", cat:"stack", desc:"Empile la saisie, ou duplique le niveau 1"}] }
+  ];
+
+  var LAYOUT = {
+    dpad:   ["up","down","left","right"],
+    sysMid: ["home","power"],
+    sysRight: ["ok","back"],
+    fnpad:  ["shift","alpha","xnt","var","toolbox","backspace","exp","ln","log","imag","comma","power","sin","cos","tan","pi","sqrt","square"],
+    numpad: ["n7","n8","n9","lparen","rparen","n4","n5","n6","mult","div","n1","n2","n3","plus","minus","n0","dot","ee","ans","exe"]
+  };
+
+  var byId = {};
+  KEYS.forEach(function (k) { byId[k.id] = k; });
+  var state = { view: "key", selectedKey: null, catFilter: null };
+
+  function keyEl(k) {
+    var el = document.createElement("button");
+    el.type = "button";
+    el.className = "k " + (k.variant ? k.variant + " " : "") + "cat-" + k.cat;
+    el.setAttribute("data-id", k.id);
+    el.setAttribute("data-cat", k.cat);
+    el.setAttribute("aria-label", k.cap);
+
+    var cap = document.createElement("span");
+    cap.className = "cap";
+    cap.innerHTML = k.cap + (k.sub ? " <small>" + k.sub + "</small>" : "");
+    el.appendChild(cap);
+
+    // primary RPN command shown for repurposed stack keys (glyph != command)
+    if (!k.variant && k.cat === "stack" && k.roles[0]) {
+      var lbl = document.createElement("span");
+      lbl.className = "rpnlabel";
+      lbl.textContent = k.roles[0].cmd;
+      el.appendChild(lbl);
+    }
+
+    var second = k.roles[1];
+    if (second && !k.variant) {
+      var tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = second.cmd;
+      tag.style.setProperty("--role-bg", "color-mix(in srgb, " + CAT[second.cat].color + " 20%, transparent)");
+      tag.style.setProperty("--role-ink", CAT[second.cat].color);
+      el.appendChild(tag);
+    } else if (k.alpha && k.cat === "input") {
+      var a = document.createElement("span");
+      a.className = "alpha";
+      a.textContent = k.alpha;
+      el.appendChild(a);
+    }
+
+    el.addEventListener("click", function () { selectKey(k.id); });
+    return el;
+  }
+
+  function renderInto(hostId, ids) {
+    var host = document.getElementById(hostId);
+    ids.forEach(function (id) { host.appendChild(keyEl(byId[id])); });
+  }
+  renderInto("dpad", LAYOUT.dpad);
+  renderInto("sysMid", LAYOUT.sysMid);
+  renderInto("sysRight", LAYOUT.sysRight);
+  renderInto("fnpad", LAYOUT.fnpad);
+  renderInto("numpad", LAYOUT.numpad);
+
+  // legend
+  var legendHost = document.getElementById("legend");
+  Object.keys(CAT).forEach(function (key) {
+    var c = CAT[key];
+    var chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip" + (key === "unused" ? " unused" : "");
+    chip.setAttribute("aria-pressed", "false");
+    chip.setAttribute("data-cat", key);
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    if (key !== "unused") dot.style.background = c.color;
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(c.label));
+    chip.addEventListener("click", function () { toggleCat(key); });
+    legendHost.appendChild(chip);
+  });
+
+  // panel — two columns: fn | stack (digits, decimal, system & unused excluded)
+  var rowsFn = document.getElementById("rowsFn");
+  var rowsStack = document.getElementById("rowsStack");
+  var panelTitle = document.getElementById("panelTitle");
+
+  function rowEl(glyph, name, desc, trigger, keyId) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.setAttribute("data-key", keyId);
+    row.innerHTML =
+      '<div class="glyph">' + glyph + '</div>' +
+      '<div class="content">' +
+        '<div class="line"><span class="nm">' + name + '</span><span class="trig">' + trigger + '</span></div>' +
+        '<div class="d">' + desc + '</div>' +
+      '</div>';
+    row.addEventListener("click", function () { selectKey(keyId); });
+    return row;
+  }
+
+  function renderPanel() {
+    rowsFn.innerHTML = "";
+    rowsStack.innerHTML = "";
+    panelTitle.textContent = state.view === "key" ? "Par touche" : "Par commande RPN";
+
+    if (state.view === "key") {
+      KEYS.forEach(function (k) {
+        var roles = k.roles.filter(function (r) { return r.cat === "fn" || r.cat === "stack"; });
+        if (!roles.length) return;
+        var col = (k.cat === "fn" || k.cat === "stack") ? k.cat : roles[0].cat;
+        var name = roles.map(function (r) { return r.cmd; }).join("  ·  ");
+        var trig = roles.map(function (r) { return r.trigger; }).join(" / ");
+        (col === "fn" ? rowsFn : rowsStack).appendChild(rowEl(k.cap, name, roles[0].desc, trig, k.id));
+      });
+    } else {
+      KEYS.forEach(function (k) {
+        k.roles.forEach(function (r) {
+          if (r.cat !== "fn" && r.cat !== "stack") return;
+          (r.cat === "fn" ? rowsFn : rowsStack).appendChild(rowEl(k.cap, r.cmd, r.desc, r.trigger, k.id));
+        });
+      });
+    }
+    applyActive();
+  }
+
+  function selectKey(id) {
+    state.selectedKey = (state.selectedKey === id) ? null : id;
+    state.catFilter = null;
+    document.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+    updateKeyboard();
+    renderPanel();
+    updateScreen();
+    if (state.selectedKey) {
+      var firstRow = document.querySelector('#rowsFn .row[data-key="' + id + '"], #rowsStack .row[data-key="' + id + '"]');
+      if (firstRow) firstRow.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }
+
+  function toggleCat(cat) {
+    state.catFilter = (state.catFilter === cat) ? null : cat;
+    state.selectedKey = null;
+    document.querySelectorAll(".chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.getAttribute("data-cat") === state.catFilter));
+    });
+    updateKeyboard();
+    renderPanel();
+    updateScreen();
+  }
+
+  function updateKeyboard() {
+    document.querySelectorAll(".k").forEach(function (el) {
+      var id = el.getAttribute("data-id");
+      var cat = el.getAttribute("data-cat");
+      el.classList.toggle("selected", state.selectedKey === id);
+      var dim = false;
+      if (state.selectedKey) dim = (state.selectedKey !== id);
+      else if (state.catFilter) dim = (cat !== state.catFilter);
+      el.classList.toggle("dim", dim);
+    });
+  }
+
+  function applyActive() {
+    document.querySelectorAll("#rowsFn .row, #rowsStack .row").forEach(function (r) {
+      r.classList.toggle("active", state.selectedKey && r.getAttribute("data-key") === state.selectedKey);
+    });
+  }
+
+  var screenBody = document.getElementById("screenBody");
+  var barRight = document.getElementById("barRight");
+  function updateScreen() {
+    if (state.selectedKey) {
+      var k = byId[state.selectedKey];
+      barRight.textContent = "touche " + (k.sub || k.cap);
+      var html;
+      if (k.roles.length) {
+        html = '<div class="s-title">' + k.cap + (k.sub ? " (" + k.sub + ")" : "") + '</div>';
+        k.roles.forEach(function (r) { html += '<div class="s-trig">' + r.trigger + ' → <b>' + r.cmd + '</b></div>'; });
+        html += '<div class="s-desc">' + k.roles[0].desc + '</div>';
+      } else if (k.cat === "unused") {
+        html = '<div class="s-title">' + k.cap + ' — libre</div><div class="s-desc">Aucun rôle en RPN. Disponible pour une future fonction.</div>';
+      } else {
+        html = '<div class="s-title">' + k.cap + '</div><div class="s-desc">Touche gérée par le système NumWorks.</div>';
+      }
+      screenBody.innerHTML = html;
+    } else if (state.catFilter) {
+      barRight.textContent = CAT[state.catFilter].label;
+      screenBody.innerHTML = '<div class="s-title">' + CAT[state.catFilter].label + '</div><div class="s-desc">Touches de cette catégorie mises en avant sur le clavier.</div>';
+    } else {
+      barRight.textContent = "N0120";
+      screenBody.innerHTML = '<div class="s-title">Explorez le clavier</div><div class="s-desc">Chaque touche opérateur agit sur la pile. Les touches sans usage en RPN restent libres pour de futures fonctions.</div>';
+    }
+  }
+
+  var tabKey = document.getElementById("tab-key");
+  var tabCmd = document.getElementById("tab-cmd");
+  function setView(v) {
+    state.view = v;
+    tabKey.setAttribute("aria-selected", String(v === "key"));
+    tabCmd.setAttribute("aria-selected", String(v === "cmd"));
+    renderPanel();
+  }
+  tabKey.addEventListener("click", function () { setView("key"); });
+  tabCmd.addEventListener("click", function () { setView("cmd"); });
+
+  var themeBtn = document.getElementById("themeBtn");
+  var themes = ["auto", "light", "dark"];
+  var labels = { auto: "Thème auto", light: "Thème clair", dark: "Thème sombre" };
+  var ti = 0;
+  themeBtn.addEventListener("click", function () {
+    ti = (ti + 1) % themes.length;
+    var t = themes[ti];
+    if (t === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", t);
+    themeBtn.textContent = labels[t];
+  });
+
+  renderPanel();
+  updateScreen();
+})();
+</script>
+</body>
+</html>

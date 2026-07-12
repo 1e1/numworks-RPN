@@ -1,0 +1,7 @@
+output/
+tests/test_engine
+*.o
+*.d
+*.nwa
+node_modules/
+.DS_Store

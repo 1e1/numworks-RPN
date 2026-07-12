@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPN for NumWorks</title>
+<meta name="description" content="A Reverse Polish Notation calculator app for the NumWorks graphing calculator, with exact fractions and a familiar key map.">
+<style>
+  :root {
+    --amber: #ffb734;
+    --amber-deep: #f59e0b;
+    --bg: #fbfbfd;
+    --surface: #ffffff;
+    --ink: #1a1a1e;
+    --muted: #6b7280;
+    --line: #e6e6ea;
+    --code-bg: #f4f4f7;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1013; --surface: #17181c; --ink: #f2f2f5; --muted: #9aa0aa;
+      --line: #2a2c33; --code-bg: #1d1f25;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1013; --surface: #17181c; --ink: #f2f2f5; --muted: #9aa0aa;
+    --line: #2a2c33; --code-bg: #1d1f25;
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfd; --surface: #ffffff; --ink: #1a1a1e; --muted: #6b7280;
+    --line: #e6e6ea; --code-bg: #f4f4f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--amber-deep); }
+
+  header.hero { text-align: center; padding: 72px 20px 48px; }
+  .logo {
+    width: 78px; height: 78px; border-radius: 20px; margin: 0 auto 22px;
+    background: linear-gradient(150deg, var(--amber), var(--amber-deep));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 30px; color: #1a1a1e;
+    box-shadow: var(--shadow); letter-spacing: .5px;
+  }
+  h1 { font-size: clamp(32px, 6vw, 48px); margin: 0 0 12px; letter-spacing: -.5px; }
+  .tagline { font-size: clamp(17px, 2.5vw, 20px); color: var(--muted); max-width: 540px; margin: 0 auto 30px; }
+  .cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    display: inline-block; padding: 13px 24px; border-radius: 999px;
+    font-weight: 650; text-decoration: none; transition: transform .08s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: linear-gradient(150deg, var(--amber), var(--amber-deep)); color: #1a1a1e; box-shadow: var(--shadow); }
+  .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+
+  section { padding: 24px 0; }
+  h2 { font-size: 24px; margin: 8px 0 18px; letter-spacing: -.3px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .card .emoji { font-size: 24px; display: block; margin-bottom: 10px; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 18px 20px; overflow-x: auto;
+    font: 14px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  pre .out { color: var(--amber-deep); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .tbl-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  th { background: var(--code-bg); font-weight: 650; }
+  tr:last-child td { border-bottom: none; }
+  kbd {
+    display: inline-block; background: var(--surface); border: 1px solid var(--line);
+    border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px;
+    font: 13px ui-monospace, Menlo, monospace; min-width: 18px; text-align: center;
+  }
+
+  .note {
+    background: var(--code-bg); border-left: 3px solid var(--amber);
+    border-radius: 8px; padding: 14px 18px; color: var(--muted); font-size: 14.5px;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 20px 60px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="logo">R↵</div>
+    <h1>RPN for NumWorks</h1>
+    <p class="tagline">A Reverse Polish Notation calculator for your NumWorks — no parentheses, no equals sign, and exact fractions where it counts.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/1e1/numworks-RPN/releases/latest">Download the app</a>
+      <a class="btn btn-ghost" href="https://github.com/1e1/numworks-RPN">View on GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="cards">
+      <div class="card">
+        <span class="emoji">🧮</span>
+        <h3>Stack, not lines</h3>
+        <p>Push numbers and let operators act on them. Fast, keystroke-efficient, and ideal for long chained calculations.</p>
+      </div>
+      <div class="card">
+        <span class="emoji">½</span>
+        <h3>Exact fractions</h3>
+        <p><code>1/3 + 1/6</code> stays <code>1/2</code>. Arithmetic and integer powers keep exact rationals; functions give decimals.</p>
+      </div>
+      <div class="card">
+        <span class="emoji">⌨️</span>
+        <h3>Familiar keys</h3>
+        <p>Every operator key keeps its printed symbol. Only the stack moves get new homes on keys unused in RPN.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>See it in action</h2>
+    <pre>3 <b>EXE</b> 6 ÷        <span class="out">→ 1/2</span>        exact fraction
+2 <b>EXE</b> √          <span class="out">→ 1.414214</span>   approximation
+5 <b>EXE</b> 4 <b>EXE</b> −    <span class="out">→ 1</span>          (5 − 4)
+π <b>EXE</b> 2 ×        <span class="out">→ 6.283185</span>
+5 !              <span class="out">→ 120</span>        exact factorial</pre>
+    <p class="note">Subtraction and division are <em>level 2 (op) level 1</em>. Entered the operands in the wrong order? Press <kbd>(</kbd> to <strong>SWAP</strong> the top two.</p>
+  </section>
+
+  <section>
+    <h2>Key map</h2>
+    <p style="color:var(--muted);margin-top:-6px">Operator keys apply to the stack; RPN-useless keys become stack operations.</p>
+    <p style="margin:2px 0 18px"><a class="btn btn-primary" href="keymap.html" style="padding:11px 20px;font-size:15px">↳ Open the interactive keyboard map</a></p>
+    <div class="tbl-scroll">
+    <table>
+      <tr><th>Key</th><th>Action</th></tr>
+      <tr><td><kbd>0</kbd>–<kbd>9</kbd> <kbd>.</kbd> <kbd>EE</kbd></td><td>type a number</td></tr>
+      <tr><td><kbd>EXE</kbd> / <kbd>OK</kbd></td><td><strong>Enter</strong> — push input, or duplicate level 1 if empty</td></tr>
+      <tr><td><kbd>⌫</kbd></td><td>delete a character, or <strong>drop</strong> level 1 when the input is empty</td></tr>
+      <tr><td><kbd>shift</kbd>+<kbd>⌫</kbd></td><td><strong>clear</strong> the whole stack</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd> <kbd>×</kbd> <kbd>÷</kbd> <kbd>^</kbd></td><td>add, subtract, multiply, divide, power</td></tr>
+      <tr><td><kbd>x²</kbd> <kbd>√</kbd> <kbd>eˣ</kbd> <kbd>ln</kbd> <kbd>log</kbd></td><td>square, square root, exp, ln, log₁₀</td></tr>
+      <tr><td><kbd>sin</kbd> <kbd>cos</kbd> <kbd>tan</kbd> (+<kbd>shift</kbd>)</td><td>trigonometry and inverse trigonometry</td></tr>
+      <tr><td><kbd>π</kbd></td><td>push π</td></tr>
+      <tr><td><kbd>(</kbd> &nbsp; <kbd>)</kbd></td><td><strong>SWAP</strong> &nbsp; / &nbsp; <strong>OVER</strong></td></tr>
+      <tr><td><kbd>shift</kbd>+<kbd>−</kbd></td><td><strong>NEG</strong> (change sign)</td></tr>
+      <tr><td><kbd>shift</kbd>+<kbd>÷</kbd></td><td><strong>INV</strong> (1/x)</td></tr>
+      <tr><td><kbd>Ans</kbd></td><td><strong>→Dec</strong> — decimal approximation of level 1</td></tr>
+      <tr><td><kbd>shift</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd></td><td><strong>roll</strong> the stack up / down</td></tr>
+      <tr><td><kbd>shift</kbd>+<kbd>.</kbd> (!)</td><td>factorial</td></tr>
+      <tr><td><kbd>Toolbox</kbd></td><td>stack menu: ROT, PICK, DUP, RAD/DEG…</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Install</h2>
+    <div class="cards">
+      <div class="card"><h3>1. Download</h3><p>Grab <code>rpn-vX.Y.Z.nwa</code> from the <a href="https://github.com/1e1/numworks-RPN/releases/latest">latest release</a>.</p></div>
+      <div class="card"><h3>2. Connect</h3><p>Open the <a href="https://my.numworks.com/apps">NumWorks app uploader</a> and plug in your calculator.</p></div>
+      <div class="card"><h3>3. Upload</h3><p>Send the file. The app appears at the end of the home menu.</p></div>
+    </div>
+    <p class="note" style="margin-top:16px">External apps run in a sandbox and can't reuse the built-in symbolic engine, so RPN ships its own numeric core: exact rationals for <code>+ − × ÷</code> and integer powers, decimals for everything else.</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>Open source · <a href="https://github.com/1e1/numworks-RPN">github.com/1e1/numworks-RPN</a><br>
+  Not affiliated with NumWorks.</p>
+</footer>
+
+</body>
+</html>

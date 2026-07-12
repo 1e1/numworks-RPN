@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run host engine tests
+        run: make test
+
+      - name: Build device app (.nwa)
+        run: make
+
+      - name: Upload nwa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpn-nwa
+          path: output/rpn.nwa
+          if-no-files-found: error
