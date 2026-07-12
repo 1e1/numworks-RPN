@@ -1,8 +1,17 @@
-# Roadmap — v2: symbolic stack with Poincaré-style presentation
+# Roadmap — symbolic stack with Poincaré-style presentation
 
-v1.0.0 is a numeric RPN calculator: the stack holds *numbers* (exact rationals
-or doubles) and every operator computes eagerly. v2 changes the nature of the
-stack.
+> **Status.** v1.0.0 held plain numbers. **v2.0.0 ships the general expression
+> tree**: a canonical polynomial-in-atoms engine (STL-free, fixed arena +
+> compacting GC) that keeps fractions, `k√m`, rational multiples of π, their
+> sums/products/integer powers, **nested radicals** (`√(1+√2)`), **conjugate
+> division** (`1/(1+√2)` → `√2−1`) and symbolic variables exact — with a decimal
+> fallback for transcendental functions / overflow / arena limits. Results
+> render in **2D** (stacked fractions, radicals with a vinculum, exponents) with
+> the level-1 decimal beneath.
+>
+> Remaining, portable: exact special values (`sin(π/6)`), general simplification
+> beyond the polynomial form, and tuning the on-device arena size on real
+> hardware. The native-build route (real Poincaré) stays the escape hatch.
 
 ## Vision
 

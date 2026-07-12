@@ -1,19 +1,37 @@
+<div align="center">
+
+<img src="src/icon.png" alt="RPN app icon" width="64" height="64">
+
 # RPN for NumWorks
+
+[![GitHub release](https://img.shields.io/github/v/release/1e1/numworks-RPN?style=flat-square)](https://github.com/1e1/numworks-RPN/releases)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/1e1/numworks-RPN?style=flat-square&color=brightgreen)](https://github.com/1e1/numworks-RPN/commits/main)
+[![License](https://img.shields.io/github/license/1e1/numworks-RPN?style=flat-square)](https://github.com/1e1/numworks-RPN/blob/main/LICENSE)
+
+### *No parentheses, no `=`.*
+
+</div>
 
 A **Reverse Polish Notation** (RPN) calculator as an external app for the
 [NumWorks](https://www.numworks.com) graphing calculator.
 
 No parentheses, no `=`: you push numbers onto a stack and operators act on it.
-Arithmetic keeps **exact fractions** (`1/3 + 1/6` stays `1/2`), and functions
-fall back to decimal approximations — the familiar NumWorks feel, RPN-style.
+Results stay **symbolic and exact** where they can — fractions (`1/3 + 1/6` →
+`1/2`), radicals (`8 √ 2 ×` → `4√2`), and rational multiples of π (`π 2 ÷` →
+`π/2`) — and fall back to a decimal approximation otherwise. The familiar
+NumWorks feel, RPN-style.
 
 ➡️ **Project page & key map:** <https://1e1.github.io/numworks-RPN/>
 
 > **Scope.** NumWorks external apps run in a sandbox and cannot call the
-> built-in Poincaré engine, so this app ships its own numeric core: exact
-> rational arithmetic for `+ − × ÷` and integer powers, IEEE double for
-> transcendental functions. Full symbolic simplification would require a native
-> build of Epsilon rather than an external app.
+> built-in Poincaré engine, so this app ships its own symbolic core: a general
+> **expression tree** kept in a canonical polynomial-in-atoms form. It keeps
+> exact fractions, `k√m`, rational multiples of π, their sums/products/integer
+> powers, **nested radicals** (`√(1+√2)`) and **conjugate division**
+> (`1/(1+√2)` → `√2−1`), and it carries symbolic variables. Transcendental
+> functions (`sin`, `ln`), integer overflow, or exceeding the on-device arena
+> fall back to a decimal — so a result is never *wrongly* exact. The engine is
+> STL-free with a compacting garbage collector over a fixed arena.
 
 ## Install
 
@@ -31,11 +49,17 @@ stack. Subtraction and division are `level2 (op) level1`:
 
 ```
 3 EXE 6 ÷        → 1/2          exact fraction
-2 EXE √          → 1.414214     approximation
+2 EXE √          → √2           exact radical
+8 EXE √ 2 ×      → 4√2          simplified
+2 √ 3 √ +        → √2 + √3      sums stay exact
+π EXE 2 ÷        → π/2          rational multiple of π
 5 EXE 4 EXE −    → 1            (5 − 4)
-π EXE 2 ×        → 6.283185
 5 !              → 120          exact factorial
 ```
+
+On the calculator these render in **2D** — stacked fractions, `√` with a
+vinculum, raised exponents — and level 1 also shows its decimal (`≈`). Press
+`Ans` (→Dec) to force the decimal approximation of the top level.
 
 If you enter operands in the wrong order, press **( = SWAP** to exchange the top
 two levels.
@@ -90,22 +114,57 @@ The numeric core (`src/value`, `src/stack`, `src/rpn`, `src/input_field`) is pur
 C++ with no calculator dependency, so `make test` compiles and runs it on your
 host machine.
 
+## Try it in a web simulator (Docker)
+
+Run the app in a browser via the Epsilon web simulator — only Docker is needed
+(the emscripten/node toolchain lives inside the container). You need an
+[Epsilon](https://github.com/numworks/epsilon) checkout next to this repo (its
+folder must contain Epsilon's `Makefile`).
+
+```shell
+docker/run.sh                      # or: EPSILON_DIR=/path/to/epsilon docker/run.sh
+```
+
+Then open <http://localhost:8000/epsilon.html?nwb=/rpn.nwb>. The first run builds
+the simulator (long; cached in a Docker volume afterwards). You can also build
+the web app alone with `make PLATFORM=web` (needs `emcc`).
+
+> **Note.** Loading the app in the *web* simulator is not wired up yet (our side
+> module needs libc/soft-float symbols Epsilon's size-deduped main module does
+> not export). To see a real-font render, use the native capture below.
+
+### Real-font screenshot (Docker)
+
+```shell
+make screenshot        # or: docker/screenshot.sh
+```
+
+Builds the Epsilon **Linux** simulator, renders the app headless with a sample
+stack, and writes `capture/render.png` — the actual NumWorks font, no browser
+needed.
+
 ## Project layout
 
 ```
 src/
-  value.{h,cpp}        exact-rational-or-double number type
-  stack.{h,cpp}        fixed-capacity RPN stack
-  input_field.{h,cpp}  the typed input line
+  value.{h,cpp}        the symbolic engine (arena tree + GC, exact/decimal)
+  layout.{h,cpp}       backend-agnostic 2D math layout (Canvas + Layout tree)
+  screen.{h,cpp}       full-screen renderer (title/stack/status/input/menu)
+  view.{h,cpp}         EADK adapter: implements Canvas on the device display
   rpn.{h,cpp}          the command engine (Enter, operators, functions…)
+  stack.{h,cpp}        fixed-capacity RPN stack of Value
+  input_field.{h,cpp}  the typed input line
   keymap.h             key event → command mapping
   menu.h               Toolbox stack-menu entries
-  view.{h,cpp}         screen rendering (EADK display)
-  main.cpp             event loop + metadata
+  utf8.h               UTF-8 glyph counter (shared by layout + screen)
   eadkpp.h             C++ wrapper over the External App Dev Kit
-tests/                 host unit tests for the numeric core
+  main.cpp             event loop + metadata
+tests/                 host unit tests + PNG render harnesses
 docs/                  GitHub Pages landing page
 ```
+
+For a fuller tour of the architecture and the contribution workflow, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 

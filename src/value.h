@@ -1,39 +1,37 @@
 #pragma once
 
-extern "C" {
-#include <stdint.h>
-}
-
-/* Value is the single numeric type flowing through the RPN stack.
+/* Symbolic-numeric value on the RPN stack: a general expression tree kept in a
+ * canonical polynomial-in-atoms form  Σ coeff · Π atom^e  (atom ∈ π, variable,
+ * √(sub-expression), 1/(sub-expression)), OR an inexact double, OR undefined.
  *
- * It is either:
- *   - EXACT: a reduced rational num/den (den > 0), used for +, -, *, / and
- *     integer powers so that 1/3 + 1/6 stays 1/2 instead of 0.5;
- *   - APPROX: an IEEE double, used as soon as a transcendental function
- *     (sin, ln, ...) or a non-representable result is involved.
+ * Exact where it can be — fractions, k√m, rational multiples of π and their
+ * sums/products/integer powers, nested radicals (√(1+√2)) and conjugate
+ * division (1/(1+√2) → √2−1) — and a decimal fallback otherwise, so a result is
+ * never wrongly exact.
  *
- * Every exact operation demotes to APPROX on overflow, so the engine never
- * silently produces a wrong exact result. */
+ * Nodes live in a shared, fixed, index-based arena (no std::vector / shared_ptr
+ * / exceptions). Reclaim with collect(); when the arena is exhausted the current
+ * operation degrades to a decimal instead of corrupting memory. */
 class Value {
  public:
-  Value() : m_num(0), m_den(1), m_approx(0.0), m_exact(false), m_undef(true) {}
+  Value();  // zero (exact)
 
-  static Value integer(int64_t n) { return Value(true, n, 1, 0.0, false); }
-  static Value rational(int64_t num, int64_t den);
-  static Value real(double x) { return Value(false, 0, 1, x, false); }
-  static Value undefined() { return Value(false, 0, 1, 0.0, true); }
-
-  // Parse a user-typed decimal string ("12", "-3.5", "6e2"). Empty -> undefined.
+  static Value integer(long long n);
+  static Value rational(long long num, long long den);
+  static Value real(double x);
+  static Value pi();
+  static Value var(char name);
+  static Value undefined();
   static Value parse(const char* text);
 
-  bool isExact() const { return m_exact && !m_undef; }
-  bool isUndefined() const { return m_undef; }
-  int64_t numerator() const { return m_num; }
-  int64_t denominator() const { return m_den; }
+  bool isExact() const { return m_kind == 0; }
+  bool isUndefined() const { return m_kind == 2; }
+  bool isInteger() const;
+  long long integerValue() const;
   double toDouble() const;
 
   Value negated() const;
-  Value inverse() const;   // 1/x
+  Value inverse() const;
   Value approx() const { return real(toDouble()); }
 
   static Value add(const Value& a, const Value& b);
@@ -43,17 +41,18 @@ class Value {
   static Value pow(const Value& a, const Value& b);
   static Value sqrtValue(const Value& a);
 
-  // Writes a human-readable form into buffer; returns written length.
-  int format(char* buffer, int bufferSize) const;
+  int format(char* buffer, int size) const;
+  int buildLayout(class Layout& layout) const;
+
+  // Arena management (called by the engine).
+  static int arenaUsage();                       // live polynomial count
+  static bool arenaNearFull();                   // time to collect?
+  static void collect(Value* roots, int count);  // compact, keeping roots
 
  private:
-  Value(bool exact, int64_t num, int64_t den, double approx, bool undef)
-      : m_num(num), m_den(den), m_approx(approx), m_exact(exact),
-        m_undef(undef) {}
-
-  int64_t m_num;
-  int64_t m_den;
-  double m_approx;
-  bool m_exact;
-  bool m_undef;
+  explicit Value(int poly) : m_poly(poly), m_real(0.0), m_kind(0) {}
+  int m_poly;
+  double m_real;
+  unsigned char m_kind;  // 0 exact, 1 real, 2 undefined
+  friend struct ValueImpl;
 };

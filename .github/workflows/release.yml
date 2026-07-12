@@ -28,18 +28,50 @@ jobs:
       - name: Build device app (.nwa)
         run: make
 
+      - name: Verify cleaned .nwa
+        run: |
+          # The build strips DWARF debug info; assert the result is both
+          # shrunk AND still a valid relocatable NWA (symtab + eadk sections
+          # intact, so nwlink can relink it at install time).
+          sz=$(stat -c%s output/rpn.nwa)
+          echo "cleaned .nwa size: ${sz} bytes"
+          [ "$sz" -lt 262144 ] || { echo "::error::.nwa looks unstripped (>256KB)"; exit 1; }
+          if arm-none-eabi-readelf -SW output/rpn.nwa | grep -q '\.debug'; then
+            echo "::error::debug sections still present"; exit 1
+          fi
+          arm-none-eabi-readelf -SW output/rpn.nwa | grep -q '\.rodata\.eadk_app_icon' \
+            || { echo "::error::icon section missing"; exit 1; }
+          name=$(npx --yes -- nwlink nwa-name output/rpn.nwa)
+          [ "$name" = "RPN" ] || { echo "::error::nwlink cannot read app name ('$name')"; exit 1; }
+          echo "OK: stripped, icon intact, nwlink reads the app."
+
       - name: Stage release asset
         run: cp output/rpn.nwa rpn-${{ github.ref_name }}.nwa
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release (idempotent)
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            "rpn-${{ github.ref_name }}.nwa#RPN app (${{ github.ref_name }}) — install via my.numworks.com/apps" \
-            --title "RPN ${{ github.ref_name }}" \
-            --notes "RPN calculator for NumWorks.
+          FILE="rpn-${TAG}.nwa"
+          # vX.Y.Z-rc / vX.Y.Z-rc.N are pre-releases.
+          PRERELEASE=""
+          [[ "$TAG" =~ -rc(\.[0-9]+)?$ ]] && PRERELEASE="--prerelease"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists — updating asset."
+            gh release upload "$TAG" "$FILE" --clobber
+          else
+            gh release create "$TAG" "${FILE}#RPN app (${TAG}) — install via my.numworks.com/apps" \
+              $PRERELEASE \
+              --title "RPN ${TAG}" \
+              --notes "RPN calculator for NumWorks.
 
-          **Install:** download \`rpn-${{ github.ref_name }}.nwa\` below, then open <https://my.numworks.com/apps>, plug in your calculator and upload the file.
+          **Install:** download \`rpn-${TAG}.nwa\` below, then open <https://my.numworks.com/apps>, plug in your calculator and upload the file.
 
           See the [project page](https://1e1.github.io/numworks-RPN/) for the full key map."
+          fi
+
+      - name: Prune old releases (retention policy)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/prune-releases.sh "${{ github.ref_name }}"

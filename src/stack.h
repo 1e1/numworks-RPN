@@ -20,6 +20,9 @@ class Stack {
   bool push(const Value& v);
   Value pop();  // undefined if empty
 
+  // Backing storage, so the engine can hand live values to Value::collect().
+  Value* mutableData() { return m_values; }
+
   bool dup();
   bool drop();
   bool swap();

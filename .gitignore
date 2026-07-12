@@ -5,3 +5,7 @@ tests/test_engine
 *.nwa
 node_modules/
 .DS_Store
+capture/
+*.dSYM/
+__pycache__/
+*.pyc

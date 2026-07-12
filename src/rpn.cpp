@@ -2,6 +2,7 @@
 
 extern "C" {
 #include <math.h>
+#include <stdint.h>
 }
 
 namespace {
@@ -11,12 +12,8 @@ constexpr double kE = 2.71828182845904523536;
 double toRadians(double x) { return x * kPi / 180.0; }
 double toDegrees(double x) { return x * 180.0 / kPi; }
 
-double factorialDouble(double x) {
-  // Only defined here for non-negative integers; caller validates.
-  double result = 1.0;
-  for (int i = 2; i <= (int)(x + 0.5); i++) result *= i;
-  return result;
-}
+// Largest n whose factorial fits exactly in int64 (20! < 2^63 <= 21!).
+constexpr int64_t kMaxExactFactorial = 20;
 }  // namespace
 
 void Engine::toggleAngleMode() {
@@ -126,7 +123,7 @@ void Engine::execute(Command command) {
       if (!m_input.isEmpty()) {
         Value v = Value::parse(m_input.text());
         m_input.clear();
-        if (v.isExact()) level = (int)v.numerator();
+        if (v.isInteger()) level = (int)v.integerValue();
       }
       if (!m_stack.pick(level)) setStatus("Bad level");
       break;
@@ -206,23 +203,23 @@ void Engine::execute(Command command) {
       if (!ensureOperands(1)) break;
       Value a = m_stack.pop();
       double x = a.toDouble();
-      if (a.isExact() && a.denominator() == 1 && a.numerator() >= 0 &&
-          a.numerator() <= 20) {
-        int64_t r = 1;
-        for (int64_t i = 2; i <= a.numerator(); i++) r *= i;
-        m_stack.push(Value::integer(r));
-      } else if (x >= 0.0) {
-        m_stack.push(Value::real(factorialDouble(x)));
-      } else {
+      if (x < 0.0) {
         m_stack.push(Value::undefined());
         setStatus("Factorial needs n>=0");
+      } else if (a.isInteger() && a.integerValue() <= kMaxExactFactorial) {
+        int64_t r = 1;
+        for (int64_t i = 2; i <= a.integerValue(); i++) r *= i;
+        m_stack.push(Value::integer(r));
+      } else {
+        // Larger or non-integer arguments: n! = gamma(n+1) as a double.
+        m_stack.push(Value::real(tgamma(x + 1.0)));
       }
       break;
     }
 
     case Command::PushPi:
       commitInput();
-      m_stack.push(Value::real(kPi));
+      m_stack.push(Value::pi());
       break;
     case Command::PushE:
       commitInput();
@@ -232,5 +229,9 @@ void Engine::execute(Command command) {
     case Command::ToggleAngle:
       toggleAngleMode();
       break;
+  }
+  // Reclaim arena space, keeping the live stack values.
+  if (Value::arenaNearFull()) {
+    Value::collect(m_stack.mutableData(), m_stack.depth());
   }
 }

@@ -1,0 +1,17 @@
+# Native (non-emscripten) environment to render the app in the Epsilon Linux
+# simulator and capture a real-font screenshot. Pass --platform matching your
+# host (docker/screenshot.sh does this) so host tools are built for the native
+# architecture — running an amd64 build tool under Rosetta breaks the font step.
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential git python3 python3-pil python3-lz4 imagemagick \
+        pkg-config libfreetype-dev libsdl2-dev libpng-dev libjpeg-dev \
+        nodejs npm ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY capture.sh /usr/local/bin/capture.sh
+RUN chmod +x /usr/local/bin/capture.sh
+
+WORKDIR /work
+ENTRYPOINT ["/usr/local/bin/capture.sh"]

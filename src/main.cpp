@@ -24,6 +24,9 @@ const uint32_t eadk_api_level
 using EADK::Keyboard::Event;
 
 int main(int argc, char* argv[]) {
+  (void)argc;
+  (void)argv;
+
   Engine engine;
   View view;
 
